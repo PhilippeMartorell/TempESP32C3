@@ -49,10 +49,7 @@ void setup(void) {
   ++bootCount;
   Serial.println("Boot number: " + String(bootCount));
 
-  /*
-  First we configure the wake up source
-  We set our ESP32 to wake up every 5 seconds
-  */
+  // Config de la mise en veille
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
   Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
 
