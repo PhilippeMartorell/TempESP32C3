@@ -12,8 +12,13 @@
 //String NbBoot[6] ; // Nb de boots en chaine de caractères de longueur fixe
 
 
-#define WIFI_SSID "BlueBox_2.4Ghz"
-#define WIFI_PASS "bonjoure"
+// Configuration du Wifi
+// Frênes
+//#define WIFI_SSID "BlueBox_2.4Ghz"
+//#define WIFI_PASS "bonjoure"
+// Arcachon
+#define WIFI_SSID "Philippe"
+#define WIFI_PASS "aqwzsxedc"
 
 OneWire ds(4);  // on pin 10 (a 4.7K resistor is necessary)
 RTC_DATA_ATTR int bootCount = 0;
@@ -26,7 +31,10 @@ String timeString = "";
 String fullDateTime = "";
 
 // Serveur FTP
-char ftp_server[] = "192.168.1.54";
+// Frênes
+//char ftp_server[] = "192.168.1.54";
+// Arcachon
+char ftp_server[] = "192.168.1.2";
 const int ftp_port = 21;
 char ftp_user[] = "rebooterie";
 char ftp_pass[] = "rebooterie";
