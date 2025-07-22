@@ -220,7 +220,7 @@ void setup(void) {
 
   //Céation du nom de fichier
   // Nb de boots longueur fixe
-  char NbBoot[6];
+  char NbBoot[7];
   sprintf(NbBoot, "%05d", bootCount);
   String NomFichier = NbBoot ;
   NomFichier = String(dateString + NbBoot + ".csv");
@@ -249,7 +249,7 @@ void setup(void) {
   ftp.CloseConnection();
 
 
-  delay(30000);  //30 secondes pour pouvoir reprogrammer la bête !
+  delay(60000);  //60 secondes pour pouvoir reprogrammer la bête !
 
   // mise en sommeil
   Serial.println("Going to sleep now");
