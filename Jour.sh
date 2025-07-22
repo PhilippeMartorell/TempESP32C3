@@ -5,8 +5,8 @@
 # Exemple: ./concat_files.sh "fichier*.txt" sortie.txt
 
 # Définir les paramètres par défaut
-PATTERN=${1:-"2025_07_20_*"}  # Pattern de recherche (par défaut tous les fichiers)
-OUTPUT=${2:-"2025_07_20.csv"}  # Fichier de sortie
+PATTERN=${1:-"2025_07_21_*"}  # Pattern de recherche (par défaut tous les fichiers)
+OUTPUT=${2:-"2025_07_21.csv"}  # Fichier de sortie
 
 # Vider le fichier de sortie s'il existe
 > "$OUTPUT"
@@ -53,3 +53,6 @@ else
     echo "Concaténation terminée: $count fichier(s) traité(s)"
     echo "Résultat sauvegardé dans: $OUTPUT"
 fi
+
+# Efacement des fichiers du jour
+ rm $PATTERN 
