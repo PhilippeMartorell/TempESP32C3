@@ -19,6 +19,8 @@
 // Arcachon
 #define WIFI_SSID "Philippe"
 #define WIFI_PASS "aqwzsxedc"
+// Timeout connexion WiFi en secondes
+#define ConstTimeOut 20
 
 OneWire ds(4);  // on pin 10 (a 4.7K resistor is necessary)
 RTC_DATA_ATTR int bootCount = 0;
@@ -167,22 +169,31 @@ void setup(void) {
 
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
-  Serial.println("Connecting Wifi...");
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
+  // Timeout
+  int timeout = ConstTimeOut ;
+  while ( WiFi.status() != WL_CONNECTED ) {
+    delay(1000);
     Serial.print(".");
-  }
+    timeout--;
+    if ( timeout == 0 )
+      {
+        MiseEnSommeil() ;
+      }
+    }
+  
   Serial.println("");
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
   // Relevé de l'heure
   struct tm timeinfo;
-  if (!getLocalTime(&timeinfo)) {
+  if (!getLocalTime(&timeinfo)) 
+  {
     Serial.println("Erreur lors de la récupération de l'heure");
     dateString = "Erreur";
     timeString = "Erreur";
     fullDateTime = "Erreur";
+    MiseEnSommeil() ;
   }
 
   // Buffer pour formater les chaînes
@@ -191,21 +202,12 @@ void setup(void) {
   // 1. Variable pour la date seulement (format: JJ/MM/AAAA)
   strftime(buffer, sizeof(buffer), "%Y_%m_%d_", &timeinfo);
   dateString = String(buffer);
-
   // 2. Variable pour l'heure seulement (format: HH:MM:SS)
   strftime(buffer, sizeof(buffer), "%H:%M:%S", &timeinfo);
   timeString = String(buffer);
-
   // 3. Variable pour date et heure complète (format: JJ/MM/AAAA HH:MM:SS)
   strftime(buffer, sizeof(buffer), "%d/%m/%Y %H:%M:%S", &timeinfo);
   fullDateTime = String(buffer);
-/*
-  // Afficher les différentes variables texte
-  Serial.println("=== Variables Date/Heure ===");
-  Serial.println("Date: " + dateString);
-  Serial.println("Heure: " + timeString);
-  Serial.println("Date/Heure complète: " + fullDateTime);
-*/
 
   //Connexion FTP
   ftp.OpenConnection();
@@ -252,12 +254,18 @@ void setup(void) {
   delay(60000);  //60 secondes pour pouvoir reprogrammer la bête !
 
   // mise en sommeil
-  Serial.println("Going to sleep now");
-  Serial.flush();
-  esp_deep_sleep_start();
-  Serial.println("This will never be printed");
+MiseEnSommeil() ;
+
+  
 }
 
 
 void loop(void) {
+}
+
+void MiseEnSommeil(void) {
+  Serial.println("Going to sleep now");
+  Serial.flush();
+  esp_deep_sleep_start();
+  Serial.println("This will never be printed");
 }
