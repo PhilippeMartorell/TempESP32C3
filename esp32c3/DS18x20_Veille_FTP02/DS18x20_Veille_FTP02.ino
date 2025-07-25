@@ -7,10 +7,12 @@
 #include "esp_sntp.h"
 
 // Paramètres de mise en veille
-#define uS_TO_S_FACTOR 1000000ULL                                        /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP 1 /* Time ESP32 will go to sleep (in seconds) */  // http://www.pjrc.com/teensy/td_libs_OneWire.html
-//String NbBoot[6] ; // Nb de boots en chaine de caractères de longueur fixe
-
+// Conversion microsecondes en secondes
+#define uS_TO_S_FACTOR 1000000ULL
+//Temps de mise en veille en secondes
+#define TIME_TO_SLEEP 1
+// Compteur de reboot
+RTC_DATA_ATTR int bootCount = 0;
 
 // Configuration du Wifi
 // Frênes
@@ -22,8 +24,9 @@
 // Timeout connexion WiFi en secondes
 #define ConstTimeOut 20
 
-OneWire ds(4);  // on pin 10 (a 4.7K resistor is necessary)
-RTC_DATA_ATTR int bootCount = 0;
+// Capteur de température ds18b20
+//4,7 Kohms en pull-up
+OneWire ds(4);  
 
 // On configure le seveur NTP
 const char* ntpServer = "fr.pool.ntp.org";
@@ -40,7 +43,8 @@ char ftp_server[] = "192.168.1.2";
 const int ftp_port = 21;
 char ftp_user[] = "rebooterie";
 char ftp_pass[] = "rebooterie";
-const char* ftp_remote_path = "/home/rebooterie/Esp/";  // Dossier distant (doit se terminer par /)
+// Dossier distant (doit se terminer par /)
+const char* ftp_remote_path = "/home/rebooterie/Esp/";
 /*
 char ftp_server[] = "91.169.47.199";
 const int ftp_port = 21;
