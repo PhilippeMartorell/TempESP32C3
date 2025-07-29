@@ -7,10 +7,12 @@
 #include "esp_sntp.h"
 
 // Paramètres de mise en veille
-#define uS_TO_S_FACTOR 1000000ULL                                        /* Conversion factor for micro seconds to seconds */
-#define TIME_TO_SLEEP 1 /* Time ESP32 will go to sleep (in seconds) */  // http://www.pjrc.com/teensy/td_libs_OneWire.html
-//String NbBoot[6] ; // Nb de boots en chaine de caractères de longueur fixe
-
+// Conversion microsecondes en secondes
+#define uS_TO_S_FACTOR 1000000ULL
+//Temps de mise en veille en secondes
+#define TIME_TO_SLEEP 1
+// Compteur de reboot
+RTC_DATA_ATTR int bootCount = 0;
 
 // Configuration du Wifi
 // Frênes
@@ -22,17 +24,20 @@
 // Timeout connexion WiFi en secondes
 #define ConstTimeOut 20
 
-OneWire ds(4);  // on pin 10 (a 4.7K resistor is necessary)
-RTC_DATA_ATTR int bootCount = 0;
+// Débug, commentaires série
+#define Commentaires true
+//#define bool Commentaires false
+
+// Capteur de température ds18b20
+//4,7 Kohms en pull-up
+OneWire ds(4);  
 
 // On configure le seveur NTP
-const char* ntpServer = "pool.ntp.org";
+const char* ntpServer = "fr.pool.ntp.org";
 // Variables pour stocker la date/heure
 String dateString = "";
 String timeString = "";
 String fullDateTime = "";
-int JourDuMois = 0 ;
-int JourDuMoisPrecedent = 0 ;
 
 // Serveur FTP
 // Frênes
@@ -42,7 +47,8 @@ char ftp_server[] = "192.168.1.2";
 const int ftp_port = 21;
 char ftp_user[] = "rebooterie";
 char ftp_pass[] = "rebooterie";
-const char* ftp_remote_path = "/home/rebooterie/Esp/";  // Dossier distant (doit se terminer par /)
+// Dossier distant (doit se terminer par /)
+const char* ftp_remote_path = "/home/rebooterie/Esp/";
 /*
 char ftp_server[] = "91.169.47.199";
 const int ftp_port = 21;
@@ -55,15 +61,24 @@ ESP32_FTPClient ftp(ftp_server, ftp_user, ftp_pass, 5000, 2);
 
 
 void setup(void) {
-  Serial.begin(115200);
+  if (Commentaires)
+  {
+    Serial.begin(115200);
+  }
   delay(10000);  //Take some time to open up the Serial Monitor
   //Increment boot number and print it every reboot
   ++bootCount;
-  Serial.println("Boot number: " + String(bootCount));
+  if (Commentaires)
+  {
+    Serial.println("Boot number: " + String(bootCount));
+  }
 
   // Config de la mise en veille
   esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR);
-  Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
+  if (Commentaires)
+  {  
+    Serial.println("Setup ESP32 to sleep for every " + String(TIME_TO_SLEEP) + " Seconds");
+  }
 
   // On configure le seveur NTP
   configTime(0, 0, ntpServer);
@@ -77,41 +92,61 @@ void setup(void) {
   float celsius;
 
   if (!ds.search(addr)) {
-    Serial.println("No more addresses.");
-    Serial.println();
+    if (Commentaires)
+      {  
+        Serial.println("No more addresses.");
+        Serial.println();
+      }
     ds.reset_search();
     delay(250);
     return;
-  }
-
-  Serial.print("ROM =");
-  for (i = 0; i < 8; i++) {
-    Serial.write(' ');
-    Serial.print(addr[i], HEX);
-  }
+    }
+  if (Commentaires)
+    {  
+      Serial.print("ROM =");
+      for (i = 0; i < 8; i++) 
+      {
+        Serial.write(' ');
+        Serial.print(addr[i], HEX);
+      }
+    }
 
   if (OneWire::crc8(addr, 7) != addr[7]) {
     Serial.println("CRC is not valid!");
     return;
   }
-  Serial.println();
-
+  if (Commentaires)
+    {  
+      Serial.println();
+    }
   // the first ROM byte indicates which chip
   switch (addr[0]) {
     case 0x10:
-      Serial.println("  Chip = DS18S20");  // or old DS1820
+      if (Commentaires)
+        {  
+          Serial.println("  Chip = DS18S20");  // or old DS1820
+        }
       type_s = 1;
       break;
     case 0x28:
-      Serial.println("  Chip = DS18B20");
+       if (Commentaires)
+        {  
+          Serial.println("  Chip = DS18B20");
+        }
       type_s = 0;
       break;
     case 0x22:
-      Serial.println("  Chip = DS1822");
+        if (Commentaires)
+        {  
+          Serial.println("  Chip = DS1822");
+        }
       type_s = 0;
       break;
     default:
-      Serial.println("Device is not a DS18x20 family device.");
+       if (Commentaires)
+        {  
+          Serial.println("Device is not a DS18x20 family device.");
+        }
       return;
   }
 
@@ -158,10 +193,12 @@ void setup(void) {
     //// default is 12 bit resolution, 750 ms conversion time
   }
   celsius = (float)raw / 16.0;
-  Serial.print("  Temperature = ");
-  Serial.print(celsius);
-  Serial.println(" Celsius ");
-
+    if (Commentaires)
+    {  
+      Serial.print("  Temperature = ");
+      Serial.print(celsius);
+      Serial.println(" Celsius ");
+    }
 
   // Connexion WiFi
   WiFi.begin(WIFI_SSID, WIFI_PASS);
@@ -170,18 +207,22 @@ void setup(void) {
   int timeout = ConstTimeOut ;
   while ( WiFi.status() != WL_CONNECTED ) {
     delay(1000);
-    Serial.print(".");
+      if (Commentaires)
+      {  
+         Serial.print(".");
+      }
     timeout--;
     if ( timeout == 0 )
       {
         MiseEnSommeil() ;
       }
     }
-  
-  Serial.println("");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
+    if (Commentaires)
+    {  
+      Serial.println("");
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
+    }
   // Relevé de l'heure
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) 
@@ -191,27 +232,6 @@ void setup(void) {
     timeString = "Erreur";
     fullDateTime = "Erreur";
     MiseEnSommeil() ;
-  }
-  else
-  {
-    char jourTableau[4];
-    strftime(jourTableau, sizeof(2), "%d", &timeinfo);
-    JourDuMois=int(jourTableau);
-    Serial.print("On est le ");
-    Serial.print(JourDuMois);
-    Serial.println(" du mois." );
-    Serial.print("Le jour précédent étais le ");
-    Serial.print(JourDuMoisPrecedent );
-    Serial.println("" );
-    if(JourDuMoisPrecedent==JourDuMois)
-    {
-      ;
-    }
-    else
-    {
-      bootCount=1;
-      JourDuMoisPrecedent=JourDuMois;
-    }
   }
 
   // Buffer pour formater les chaînes
@@ -234,19 +254,25 @@ void setup(void) {
   sprintf(NbBoot, "%05d", bootCount);
   String NomFichier = NbBoot ;
   NomFichier = String(dateString + NbBoot + ".csv");
-  Serial.print("Nom du Fichier=>");
-  Serial.print(NomFichier);
-  Serial.println("<=");
+  if (Commentaires)
+    {  
+      Serial.print("Nom du Fichier=>");
+      Serial.print(NomFichier);
+      Serial.println("<=");
+    }
   const char* NomFichierConstante = NomFichier.c_str();
 
 // Création du contenu
   char mesureTxt[6];
   snprintf(mesureTxt, sizeof(mesureTxt), "%.2f", celsius);
   String ligne = String(timeString + ";" + mesureTxt);
-  Serial.print("ligne =>");
-  Serial.print(ligne);
-  Serial.println("<=");
-  const char* ligneConstante = ligne.c_str();
+    if (Commentaires)
+    {  
+      Serial.print("ligne =>");
+      Serial.print(ligne);
+      Serial.println("<=");
+    }
+    const char* ligneConstante = ligne.c_str();
 
   //Connexion FTP
   ftp.OpenConnection();
