@@ -252,6 +252,10 @@ void setup(void) {
       Serial.print("IP address: ");
       Serial.println(WiFi.localIP());
     }
+// Création du contenu
+  char mesureTxt[6];
+  snprintf(mesureTxt, sizeof(mesureTxt), "%.2f", celsius);
+     
   // Relevé de l'heure
   struct tm timeinfo;
   if (!getLocalTime(&timeinfo)) 
@@ -341,10 +345,7 @@ void setup(void) {
     }
   const char* NomFichierConstante = NomFichier.c_str();
 
-// Création du contenu
-  char mesureTxt[6];
-  snprintf(mesureTxt, sizeof(mesureTxt), "%.2f", celsius);
-  String ligne = String(timeString + ";" + mesureTxt);
+ String ligne = String(timeString + ";" + mesureTxt);
     if (Commentaires)
     {  
       Serial.print("ligne =>");
